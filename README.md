@@ -49,3 +49,9 @@ data:
   mongo-user: bW9uZ291c2Vy
   mongo-password: bW9uZ29wYXNzd29yZA==
 ```
+
+### 3. Deployment and Service in one file
+
+Following the tutorial, I created a new file named `mongo.yaml` where the **Deployment** and **Service** entities will be declared together. 
+
+Kubernetes 101: **Deployments** can be understood as blueprint for ephemeral pods, while **Services** work as a declaration of how pods communicate regardless of status (there are better definitions on the web, believe me).
