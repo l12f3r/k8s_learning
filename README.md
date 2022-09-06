@@ -1,0 +1,2 @@
+# k8s_learning
+Learning Kubernetes is not easy. To build knowledge, I started this small project based on [TechWorld with Nana's crash course (https://www.youtube.com/watch?v=s_o8dwzRlu4)] of a demo project of a web app with MongoDB on K8s (using Minikube).
