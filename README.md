@@ -54,4 +54,58 @@ data:
 
 Following the tutorial, I created a new file named `mongo.yaml` where the **Deployment** and **Service** entities will be declared together. 
 
-Kubernetes 101: **Deployments** can be understood as blueprint for ephemeral pods, while **Services** work as a declaration of how pods communicate regardless of status (there are better definitions on the web, believe me).
+The values inserted were based on [Dockerhub's official MongoDB image](https://hub.docker.com/_/mongo), using the same 5.0 tag from the tutorial. And the creativity on arbitrary names are a result of the creative mind of yours truly.
+
+Since that this is a study scenario, **Deployment** is used because it works as a blueprint for ephemeral pods; in real-life scenarios, databases must be configured as **StatefulSet** instead. 
+
+The `spec` field on **Deployment** has a few specific subfields that are required:
+- `spec.replicas`: the desired amount of pods to be created;
+- `spec.selector`: similar to labels, `selector` work as a flag to determine which pod belong to which deployment - in this example, all pods matching labels with the deployment's `metadata.labels` field will follow this deployment's structure. Values are arbitrary;
+- `spec.template`: contains the configuration of a pod, with its own `spec` and `metadata` fields. Multiple pods can be listed under this subfield (by adding extra `spec.template.spec.containers` reps) and everything is applicable to its listed pod, within this deployment.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-deployment
+  labels:
+    app: mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - name: mongodbcdefu
+        image: mongo:5.0
+        ports:
+        - containerPort: 27017
+```
+
+**Service** works as "a declaration of how pods communicate regardless of status". Think of a route table coupled to a DNS server: useful because it allows pods to communicate via labels, removing the concern of trying to connect to a potential revived pod with a new IP address (there are better definitions on the web, believe me).
+
+Upon defining `metadata.name`, the field/values set under `data` on the `mongo-config.yaml` **ConfigMap** file must be matched, in order to work as an endpoint to connect. 
+
+Its `spec.selector` field/value must also be matched to the **Deployment** one, for the same connection reasons. Also under `spec`, `spec.ports` is a list that has the following subfields to define:
+- `spec.ports.protocol`: Protocol used for this item list;
+- `spec.ports.port`: Port used to access the **Service**;
+- `spec.ports.targetPort`: Port used to access the pods within the **Deployment** (that is, its `spec.template.spec.containers.containerPort` field).
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  mongo-url: mongo-service
+spec:
+  selector:
+    app: mongo
+  ports:
+    - protocol: TCP
+      port: 27017 #same value inserted as good practice; this is an arbitrary value, usually 80
+      targetPort: 27017
+```
