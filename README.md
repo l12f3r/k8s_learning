@@ -52,7 +52,7 @@ data:
 
 ### 3. Deployment and Service in one file
 
-Following the tutorial, I created a new file named `mongo.yaml` where the **Deployment** and **Service** entities will be declared together. 
+Following the tutorial, I created a new file named `mongo.yaml` where the **Deployment** and **Service** entities for the MongoDB node will be declared together. 
 
 The values inserted were based on [Dockerhub's official MongoDB image](https://hub.docker.com/_/mongo), using the same 5.0 tag from the tutorial. And the creativity on arbitrary names are a result of the creative mind of yours truly.
 
@@ -89,7 +89,7 @@ spec:
 
 **Service** works as "a declaration of how pods communicate regardless of status". Think of a route table coupled to a DNS server: useful because it allows pods to communicate via labels, removing the concern of trying to connect to a potential revived pod with a new IP address (there are better definitions on the web, believe me).
 
-Upon defining `metadata.name`, the field/values set under `data` on the `mongo-config.yaml` **ConfigMap** file must be matched, in order to work as an endpoint to connect. 
+Upon defining `metadata.name`, the value set under `data` on the `mongo-config.yaml` **ConfigMap** file must be matched, in order to work as an endpoint to connect. 
 
 Its `spec.selector` field/value must also be matched to the **Deployment** one, for the same connection reasons. Also under `spec`, `spec.ports` is a list that has the following subfields to define:
 - `spec.ports.protocol`: Protocol used for this item list;
@@ -100,7 +100,7 @@ Its `spec.selector` field/value must also be matched to the **Deployment** one, 
 apiVersion: v1
 kind: Service
 metadata:
-  mongo-url: mongo-service
+  name: mongo-service
 spec:
   selector:
     app: mongo
@@ -108,4 +108,42 @@ spec:
     - protocol: TCP
       port: 27017 #same value inserted as good practice; this is an arbitrary value, usually 80
       targetPort: 27017
+```
+
+I also created a `webapp.yaml` file with a very similar structure from `mongo.yaml`, which will represent the webapp deployment with values properly set - [the container image used is the same as Nana's](https://hub.docker.com/r/nanajanashia/k8s-demo-app), some simple NodeJS.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-deployment
+  labels:
+    app: webapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - name: webapp
+        image: nanajanashia/k8s-demo-app:v1.0
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-service
+spec:
+  selector:
+    app: webapp
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
 ```
