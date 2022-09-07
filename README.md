@@ -147,3 +147,44 @@ spec:
       port: 3000
       targetPort: 3000
 ```
+
+🔒 The final configuration would be passing **Secret** and **ConfigMap** data to MongoDB and webapp **Deployment** files. Avoiding hardcoding is always good practice.
+
+The database expects specific environment variables for username and password (`MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD`, respectively), which are automatically set when a database is provisioned. This will be set on the `spec.template.spec.containers.env` field of the `mongo.yaml` file, fetching data from the **Secret** and **ConfigMap** files:
+
+```yaml
+# mongo.yaml
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-user
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-password
+```
+
+Upon starting, the webapp needs to connect to the database. That means that it'll expect the database endpoint set on the **ConfigMap** (as `DB_URL`), apart from username and password from **Secret** (as `USER_NAME` and `USER_PWD`), as environment variables like the `mongo.yaml` file.
+
+```yaml
+# webapp.yaml
+        env:
+        - name: USER_NAME
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-user
+        - name: USER_PWD
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-password
+        - name: DB_URL
+          valueFrom:
+            configMapKeyRef:
+              name: mongo-config
+              key: mongo-url
+```
