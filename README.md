@@ -16,7 +16,7 @@ Kubernetes uses .yaml files to create and manage entities of its system (referre
 
 There is a fifth field named `status`, which describes the current state of the object, but this is managed by the tool itself. It compares the current state with what is desired on `spec` and, if there is any difference, the orchestrator works on provisioning resources automatically.
 
-The first file created was `mongo-config.yaml`, a **ConfigMap**, which has `data` (or `binaryData`) fields instead of `spec`:
+The first file created was `mongo-config.yaml`, a **ConfigMap**, which has `data` (or `binaryData`) fields instead of `spec`; it expects an UTF-8 string as value with the service name of the MongoDB node (that will be its endpoint).
 
 ```yaml
 apiVersion: v1
@@ -24,7 +24,7 @@ kind: ConfigMap
 metadata:
   name: mongo-config #this value is arbitrary
 data:
-  mongo-url: mongo-service #UTF-8 string with the service name of the MongoDB node, which will be its endpoint
+  mongo-url: mongo-service
 ```
 
 ### 2. Secret 🔒
@@ -150,7 +150,7 @@ spec:
 
 🔒 The final configuration would be passing **Secret** and **ConfigMap** data to MongoDB and webapp **Deployment** files. Avoiding hardcoding is always good practice.
 
-The database expects specific environment variables for username and password (`MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD`, respectively), which are automatically set when a database is provisioned. This will be set on the `spec.template.spec.containers.env` field of the `mongo.yaml` file, fetching data from the **Secret** and **ConfigMap** files:
+The database expects specific environment variables for username and password (`MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD`, respectively), which are automatically set when a database is provisioned. This will be set on the `spec.template.spec.containers.env` field of the `mongo.yaml` file, fetching data from the **Secret** file:
 
 ```yaml
 # mongo.yaml
