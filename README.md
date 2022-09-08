@@ -167,7 +167,7 @@ The database expects specific environment variables for username and password (`
               key: mongo-password
 ```
 
-Upon starting, the webapp needs to connect to the database. That means that it'll expect the database endpoint set on the **ConfigMap** (as `DB_URL`), apart from username and password from **Secret** (as `USER_NAME` and `USER_PWD`), as environment variables like the `mongo.yaml` file.
+Upon starting, the webapp needs to connect to the database. That means it'll expect the database endpoint set on the **ConfigMap** (as `DB_URL`), apart from username and password from **Secret** (as `USER_NAME` and `USER_PWD`), as environment variables like the `mongo.yaml` file.
 
 ```yaml
 # webapp.yaml
@@ -187,4 +187,25 @@ Upon starting, the webapp needs to connect to the database. That means that it'l
             configMapKeyRef:
               name: mongo-config
               key: mongo-url
+```
+
+Now, the webapp must be accessible from a browser. In order to do so, the webapp's **Service** must be configured as external. A few changes must be applied under the `spec` field: 
+- `spec.type`: internal services use `ClusterIP` as value; externals use `NodePort`;
+- `spec.ports.nodePort`: static port that will expose the **Service** to the Internet on each node's IP. Must be between the 30000-32767 range.
+
+```yaml
+# webapp.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-service
+spec:
+  type: NodePort # line added
+  selector:
+    app: webapp
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      NodePort: 30420 # line added
 ```
