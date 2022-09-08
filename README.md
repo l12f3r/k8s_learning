@@ -207,5 +207,41 @@ spec:
     - protocol: TCP
       port: 3000
       targetPort: 3000
-      NodePort: 30420 # line added
+      nodePort: 30420 # line added
 ```
+
+### 4. Deploying on Minikube
+
+Now, all files must be deployed one by one: **Secret** and **ConfigMap** first. On the terminal with the Minikube cluster running, run the following commands in order:
+1. `kubectl apply -f mongo-config.yaml`, to load the **ConfigMap**;
+2. `kubectl apply -f mongo-secret.yaml`, to load the **Secret**;
+3. `kubectl apply -f mongo.yaml`, to create the database; and
+4. `kubectl apply -f webapp.yaml` to create the webapp.
+
+⚠️ At this point, I got an error message (`The connection to the server <server-name:port> was refused - did you specify the right host or port?`) because `kubectl` was pointing to a stale minikube-vm (probably something with Docker Desktop, who knows), which led to have a Control Plane running within minikube, but with `apiserver` and `kubelet` both stopped, apart from a misconfigured `kubeconfig` file. I fixed it by updating minikube's context (`minikube update-context`) and restarting it.
+
+After running all previous commands, run `kubectl get all` to view everything running so far. The results must be similar to this:
+
+```bash
+⠠⠵ kubectl get all
+NAME                                     READY   STATUS    RESTARTS   AGE
+pod/mongo-deployment-64bb45c874-ncpnw    1/1     Running   0          3m37s
+pod/webapp-deployment-649d7fb885-ctnld   1/1     Running   0          3m25s
+
+NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/kubernetes       ClusterIP   10.96.0.1       <none>        443/TCP          2d1h
+service/mongo-service    ClusterIP   10.107.66.168   <none>        27017/TCP        3m37s
+service/webapp-service   NodePort    10.99.181.183   <none>        3000:30420/TCP   2m4s
+
+NAME                                READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/mongo-deployment    1/1     1            1           3m37s
+deployment.apps/webapp-deployment   1/1     1            1           3m25s
+
+NAME                                           DESIRED   CURRENT   READY   AGE
+replicaset.apps/mongo-deployment-64bb45c874    1         1         1       3m37s
+replicaset.apps/webapp-deployment-649d7fb885   1         1         1       3m25s
+```
+
+As you can see, all pods, services and deployments are listed properly. To view the unlisted secrets and configmaps, use `kubectl get secret` or `kubectl get configmap`.
+
+### 5. 
