@@ -244,4 +244,10 @@ replicaset.apps/webapp-deployment-649d7fb885   1         1         1       3m25s
 
 As you can see, all pods, services and deployments are listed properly. To view the unlisted secrets and configmaps, use `kubectl get secret` or `kubectl get configmap`.
 
-### 5. 
+### 5. Acessing on the browser
+
+The final step consists in viewing the results of the implementation on the browser. For that, enter `minikube service webapp-service --url` and click the URL provided.
+
+### 6. Thank you
+
+- [Nana Janashia](https://www.youtube.com/c/TechWorldwithNana), for providing such complex knowledge in a very didatic way.
